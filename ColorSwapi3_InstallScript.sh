@@ -14,7 +14,7 @@
 #-r refresh all files. Will use file named 'config' as main. Old files will be overwritten.
 #-d delete all installed scripts and config files. Restores default i3 behavior.
 #-----------------------------
-PTH=${HOME}"/.testi3/"
+PTH=${HOME}"/.i3/"
 
 #Colors in HTML format here. Feel free to add any color in given format.
 #Do not start and end with a newline
