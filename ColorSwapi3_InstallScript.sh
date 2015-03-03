@@ -7,15 +7,17 @@
 #Works from anywhere
 #works with ~/.i3 directory
 #Needs i3WM and its config file in the path below.
+#(!!!) IT IS HIGHLY RECOMMENDED FOR YOU TO KEEP BACKUP OF YOUR I3 CONFIG FILE (!!!)
 #------------------------------
 #SUPPORTED CMD OPTIONS:
 #-i install sequence
-#-d delete all installed scripts and config files. Restore default i3 behavior.
+#-r refresh all files. Will use file named 'config' as main. Old files will be overwritten.
+#-d delete all installed scripts and config files. Restores default i3 behavior.
 #-----------------------------
-PTH=${HOME}"/.i3/"
-NCOL=18 #NN of colors
+PTH=${HOME}"/.testi3/"
 
-#Colors in HTML format here
+#Colors in HTML format here. Feel free to add any color in given format.
+#Do not start and end with a newline
 #------------------------
 COLORS="FF0000
 FF3300
@@ -37,6 +39,8 @@ FF4500
 4682B4"
 #-------------------------
 
+NCOL=$(echo "$COLORS" | wc -l) #NN of colors
+
 
 
 install() {
@@ -57,13 +61,13 @@ install() {
 	EHOME=$(echo $HOME | sed -e "s/\//\\\\\//g") #/ -> \/
 	
 	#I have fucked my mind while producing the lines below
-	cat config | sed -e "s/focus left/exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus left\"/g" > config_tmp
+	cat config | sed -e "s/\$mod+Left focus left/\$mod+Left exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus left\"/g" > config_tmp
 	mv config_tmp config
-	cat config | sed -e "s/focus down/exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus down\"/g" > config_tmp
+	cat config | sed -e "s/\$mod+Down focus down/\$mod+Down exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus down\"/g" > config_tmp
 	mv config_tmp config
-	cat config | sed -e "s/focus up/exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus up\"/g" > config_tmp
+	cat config | sed -e "s/\$mod+Up focus up/\$mod+Up exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus up\"/g" > config_tmp
 	mv config_tmp config
-	cat config | sed -e "s/focus right/exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus right\"/g" > config_tmp
+	cat config | sed -e "s/\$mod+Right focus right/\$mod+Right exec --no-startup-id \"${EHOME}\/.i3\/swap_colors.sh \&\& i3-msg focus right\"/g" > config_tmp
 	mv config_tmp config
 	#And begin making config files
 	I=1
@@ -88,7 +92,6 @@ swapscript() {
 
 	CURDIR=$(pwd)
 	cd $DESTDIR
-	touch swap_configs.sh
 
 	#Codeline here-----
 	echo -e "#!/bin/bash
@@ -115,5 +118,43 @@ swapscript() {
 	cd $CURDIR
 }
 
-	
-install
+refresh() {
+	#refresh script here
+	cd $PTH
+	#remove all old stuff
+	rm config.bkp
+	cp config config.bkp
+	for(( i = 1;i<=$NCOL; i++)); do
+		rm config${i}
+	done
+	#and install new
+	install
+}
+
+delete() {
+	#deletes all. 
+	cd $PTH
+	#remove all old stuff
+	rm config
+	mv config.bkp config
+	for(( i = 1; i<=$NCOL; i++)); do
+		rm config${i}
+		echo "Removed config${i}. [OK]"
+	done
+	rm swap_colors.sh
+	echo "All done. Will now refresh i3 config file"
+	#i3-msg refresh
+}
+
+#main prog sequence here
+case "$1" in
+	"-i")
+		install
+		;;
+	"-r")
+		refresh
+		;;
+	"-d")
+		delete
+		;;
+esac
